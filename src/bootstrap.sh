@@ -12,7 +12,19 @@ UPSTREAM="$WORKSPACE/upstream"
 # Ensure workspace root exists
 mkdir -p "$WORKSPACE"
 
+# Basic diagnostics to verify mount and paths
+echo "[bootstrap] WORKSPACE=$WORKSPACE"
+echo "[bootstrap] pwd=$(pwd)"
+echo "[bootstrap] ls /workspace:"
+ls -la /workspace || true
+echo "[bootstrap] ls WORKSPACE:"
+ls -la "$WORKSPACE" || true
+echo "[bootstrap] df -h:"
+df -h || true
+
 mkdir -p "$CACHE" "$OUTPUT" "$LOGS" "$SRC"
+# Probe file to confirm writability/persistence
+touch "$WORKSPACE/.bootstrap_probe" || true
 
 # Clone upstream Lotus repo if missing (code is used at runtime; not baked in image)
 if [ ! -d "$UPSTREAM/.git" ]; then
