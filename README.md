@@ -25,8 +25,8 @@ This repository packages the Lotus depth regression model (`jingheya/lotus-depth
 - `HF_HOME` and `HUGGINGFACE_HUB_CACHE` — default to `/workspace/Lotus/cache`.
 - `MODEL_ID` — optional override (default `jingheya/lotus-depth-d-v2-0-disparity`).
 
-## Calling the endpoint (RunPod `/run` example)
-Use URL for larger images (payload limit ~10MB on `/run`); base64 only for small inputs.
+## Calling the endpoint (RunPod `/run` or `/runsync`)
+Use `/runsync` for synchronous handling; payload limits (~10MB) still apply. Prefer `image_url` for larger files and base64 only for small inputs.
 ```json
 {
   "input": {
