@@ -35,6 +35,7 @@ fi
 export HF_HOME="$CACHE"
 export HF_HUB_CACHE="$CACHE"
 export HUGGINGFACE_HUB_CACHE="$CACHE"
+export PYTHONPATH="${PYTHONPATH:-}"
 export PYTHONPATH="$SRC:$UPSTREAM:$PYTHONPATH"
 
 # Optional: prefetch model (uncomment if desired)
