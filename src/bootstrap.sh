@@ -35,8 +35,8 @@ fi
 export HF_HOME="$CACHE"
 export HF_HUB_CACHE="$CACHE"
 export HUGGINGFACE_HUB_CACHE="$CACHE"
-export PYTHONPATH="${PYTHONPATH:-}"
-export PYTHONPATH="$SRC:$UPSTREAM:$PYTHONPATH"
+PYTHONPATH_VALUE="${PYTHONPATH:-}"
+export PYTHONPATH="$SRC:$UPSTREAM:$PYTHONPATH_VALUE"
 
 # Optional: prefetch model (uncomment if desired)
 # MODEL_ID=${MODEL_ID:-jingheya/lotus-depth-d-v2-0-disparity}
