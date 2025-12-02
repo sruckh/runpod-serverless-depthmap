@@ -9,6 +9,9 @@ OUTPUT="$WORKSPACE/output_images"
 LOGS="$WORKSPACE/logs"
 UPSTREAM="$WORKSPACE/upstream"
 
+# Ensure workspace root exists
+mkdir -p "$WORKSPACE"
+
 mkdir -p "$CACHE" "$OUTPUT" "$LOGS" "$SRC"
 
 # Clone upstream Lotus repo if missing (code is used at runtime; not baked in image)
