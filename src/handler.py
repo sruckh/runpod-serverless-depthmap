@@ -106,8 +106,8 @@ def run_inference(job):
     tensor = torch.tensor(np_img).permute(2, 0, 1).unsqueeze(0)
     tensor = tensor / 127.5 - 1.0
     pipe = load_pipeline(job_input.get("model_id"))
-    tensor = tensor.to(pipe.device)
-    task_emb = torch.tensor([1, 0]).float().unsqueeze(0).to(pipe.device)
+    tensor = tensor.to(pipe.device, dtype=pipe.dtype)
+    task_emb = torch.tensor([1, 0], device=pipe.device, dtype=pipe.dtype).unsqueeze(0)
     task_emb = torch.cat([torch.sin(task_emb), torch.cos(task_emb)], dim=-1)
     with torch.no_grad():
         pred = pipe(
