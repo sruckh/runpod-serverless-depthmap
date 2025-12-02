@@ -24,9 +24,9 @@ if [ ! -d "$VENV" ]; then
   pip install https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.8cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
   pip install \
     accelerate==1.4.0 datasets==3.3.1 diffusers==0.32.2 easydict==1.13 ftfy==6.3.1 \
-    geffnet==1.0.2 h5py==3.13.0 huggingface-hub==1.1.7 ImageIO==2.37.0 imageio-ffmpeg==0.6.0 \
+    geffnet==1.0.2 h5py==3.13.0 huggingface-hub==0.36.0 ImageIO==2.37.0 imageio-ffmpeg==0.6.0 \
     Jinja2==3.1.6 matplotlib==3.10.1 numpy==2.2.3 omegaconf==2.4.0.dev3 opencv-python==4.11.0.86 \
-    peft==0.15.1 spaces==0.33.1 tabulate==0.9.0 tensorboard==2.19.0 transformers==4.49.0 \
+    peft==0.15.1 spaces==0.33.1 tabulate==0.9.0 tensorboard==2.19.0 transformers==4.57.3 \
     requests==2.32.3 pillow==11.0.0 runpod==1.6.1
 else
   source "$VENV/bin/activate"
