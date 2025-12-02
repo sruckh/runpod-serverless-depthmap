@@ -6,6 +6,7 @@ import logging
 import os
 import sys
 import uuid
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -33,6 +34,18 @@ OUTPUT_DIR = WORKSPACE / "output_images"
 MAX_PIXELS = 4096 * 4096  # resolution guard
 
 _pipeline = None
+
+# Silence noisy deprecations from diffusers Lora and torch_dtype notices
+warnings.filterwarnings(
+    "ignore",
+    message=".*LoraLoaderMixin is deprecated.*",
+    category=FutureWarning,
+)
+warnings.filterwarnings(
+    "ignore",
+    message="`torch_dtype` is deprecated",
+    category=FutureWarning,
+)
 
 
 def load_pipeline(model_id=None):
