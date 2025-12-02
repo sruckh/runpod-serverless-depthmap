@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-WORKSPACE=${WORKSPACE:-/workspace/Lotus}
+# Determine base mount: prefer /runpod-volume if present, else /workspace
+if [ -d /runpod-volume ]; then
+  BASE=/runpod-volume
+else
+  BASE=/workspace
+fi
+WORKSPACE=${WORKSPACE:-$BASE/Lotus}
 VENV="$WORKSPACE/venv"
 SRC="$WORKSPACE/src"
 CACHE="$WORKSPACE/cache"
