@@ -70,4 +70,4 @@ export PYTHONPATH="$SRC:$UPSTREAM:$PYTHONPATH_VALUE"
 python "$SRC/handler.py" --warmup || true
 
 # Start handler (runpod serverless mode)
-exec python "$SRC/handler.py" --rp_serve_api
+exec python "$SRC/handler.py"
