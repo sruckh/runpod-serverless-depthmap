@@ -1,0 +1,17 @@
+.git
+.gitignore
+.github
+__pycache__/
+*.py[cod]
+*.pyo
+*.swp
+*.swo
+venv/
+.venv/
+/cache/
+/models/
+/output_images/
+/logs/
+.DS_Store
+node_modules/
+.env

@@ -1,0 +1,29 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+
+# Local artifacts / caches
+/cache/
+/models/
+/output_images/
+/logs/
+
+# Editors / OS
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+DOCKER_DESCRTIPTION.md
+.serena/
+
+# Env files
+.env
+
+# Node / misc (not used, but ignore just in case)
+node_modules/
