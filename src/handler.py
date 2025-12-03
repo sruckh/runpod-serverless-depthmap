@@ -112,6 +112,7 @@ def run_inference(job):
     task_emb = torch.tensor([1, 0], device=pipe.device, dtype=pipe.dtype).unsqueeze(0)
     task_emb = torch.cat([torch.sin(task_emb), torch.cos(task_emb)], dim=-1)
     processing_res = job_input.get("processing_res", 0)  # 0 = native resolution
+    resample_method = job_input.get("resample_method", "bicubic")
     with torch.no_grad():
         pred = pipe(
             rgb_in=tensor,
@@ -123,7 +124,7 @@ def run_inference(job):
             task_emb=task_emb,
             processing_res=processing_res,
             match_input_res=not job_input.get("output_processing_res", False),
-            resample_method=job_input.get("resample_method", "bilinear"),
+            resample_method=resample_method,
         ).images[0]
     out_np = pred.mean(axis=-1)
     out_min, out_max = float(out_np.min()), float(out_np.max())
