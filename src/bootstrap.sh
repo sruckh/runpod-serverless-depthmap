@@ -7,7 +7,13 @@ if [ -d /runpod-volume ]; then
 else
   BASE=/workspace
 fi
-WORKSPACE=${WORKSPACE:-$BASE/Lotus}
+# If WORKSPACE is unset or the default /workspace/Lotus, move to BASE/Lotus
+ORIGINAL_WORKSPACE="${WORKSPACE:-}"
+if [ -z "$ORIGINAL_WORKSPACE" ] || [ "$ORIGINAL_WORKSPACE" = "/workspace/Lotus" ]; then
+  WORKSPACE="$BASE/Lotus"
+else
+  WORKSPACE="$ORIGINAL_WORKSPACE"
+fi
 VENV="$WORKSPACE/venv"
 SRC="$WORKSPACE/src"
 CACHE="$WORKSPACE/cache"
@@ -19,6 +25,8 @@ UPSTREAM="$WORKSPACE/upstream"
 mkdir -p "$WORKSPACE"
 
 # Basic diagnostics to verify mount and paths
+echo "[bootstrap] BASE=$BASE"
+echo "[bootstrap] ORIGINAL_WORKSPACE=${ORIGINAL_WORKSPACE:-<unset>}"
 echo "[bootstrap] WORKSPACE=$WORKSPACE"
 echo "[bootstrap] pwd=$(pwd)"
 echo "[bootstrap] ls /workspace:"
