@@ -101,6 +101,7 @@ def load_image_from_job(job_input):
 def run_inference(job):
     check_api_key(job)
     job_input = job.get("input") or {}
+    job_id = job.get("id") or job.get("requestId") or "unknown_job"
     img = load_image_from_job(job_input)
     np_img = np.array(img).astype(np.float32)
     tensor = torch.tensor(np_img).permute(2, 0, 1).unsqueeze(0)
@@ -133,6 +134,7 @@ def run_inference(job):
     buf = io.BytesIO()
     png.save(buf, format="PNG")
     b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+    logger.info("job=%s saved=%s min=%.4f max=%.4f", job_id, png_path, out_min, out_max)
     return {"image_base64": b64, "min": out_min, "max": out_max, "file_path": str(png_path)}
 
 
