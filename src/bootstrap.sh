@@ -57,6 +57,11 @@ if [ ! -f "$SRC/handler.py" ]; then
   cp -r /workspace/Lotus/src/* "$SRC"/ 2>/dev/null || true
 fi
 
+# Cleanup old outputs (older than 14 days)
+if [ -d "$OUTPUT" ]; then
+  find "$OUTPUT" -type f -mtime +14 -delete || true
+fi
+
 if [ ! -d "$VENV" ]; then
   python -m venv "$VENV"
   source "$VENV/bin/activate"

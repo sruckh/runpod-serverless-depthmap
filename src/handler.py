@@ -54,7 +54,8 @@ def load_pipeline(model_id=None):
         return _pipeline
     model_id = model_id or MODEL_ID_DEFAULT
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    dtype = torch.float16 if device.type == "cuda" else torch.float32
+    # Use float32 for better quality/stability (slower than fp16 but fewer artifacts)
+    dtype = torch.float32
     pipe = LotusDPipeline.from_pretrained(
         model_id, torch_dtype=dtype, cache_dir=os.environ.get("HF_HOME")
     )
@@ -110,6 +111,7 @@ def run_inference(job):
     tensor = tensor.to(pipe.device, dtype=pipe.dtype)
     task_emb = torch.tensor([1, 0], device=pipe.device, dtype=pipe.dtype).unsqueeze(0)
     task_emb = torch.cat([torch.sin(task_emb), torch.cos(task_emb)], dim=-1)
+    processing_res = job_input.get("processing_res", 0)  # 0 = native resolution
     with torch.no_grad():
         pred = pipe(
             rgb_in=tensor,
@@ -119,7 +121,7 @@ def run_inference(job):
             output_type="np",
             timesteps=[job_input.get("timestep", 999)],
             task_emb=task_emb,
-            processing_res=job_input.get("processing_res"),
+            processing_res=processing_res,
             match_input_res=not job_input.get("output_processing_res", False),
             resample_method=job_input.get("resample_method", "bilinear"),
         ).images[0]
