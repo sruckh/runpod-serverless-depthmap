@@ -14,6 +14,7 @@ if [ -z "$ORIGINAL_WORKSPACE" ] || [ "$ORIGINAL_WORKSPACE" = "/workspace/Lotus" 
 else
   WORKSPACE="$ORIGINAL_WORKSPACE"
 fi
+export WORKSPACE
 VENV="$WORKSPACE/venv"
 SRC="$WORKSPACE/src"
 CACHE="$WORKSPACE/cache"
@@ -39,6 +40,10 @@ df -h || true
 mkdir -p "$CACHE" "$OUTPUT" "$LOGS" "$SRC"
 # Probe file to confirm writability/persistence
 touch "$WORKSPACE/.bootstrap_probe" || true
+
+# Change to workspace for consistency
+cd "$WORKSPACE"
+echo "[bootstrap] cd to $WORKSPACE; pwd=$(pwd)"
 
 # Clone upstream Lotus repo if missing (code is used at runtime; not baked in image)
 if [ ! -d "$UPSTREAM/.git" ]; then
