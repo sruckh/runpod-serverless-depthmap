@@ -50,6 +50,13 @@ if [ ! -d "$UPSTREAM/.git" ]; then
   git clone https://github.com/EnVision-Research/Lotus.git "$UPSTREAM"
 fi
 
+# Ensure runtime scripts are present in $SRC (copy from image if missing)
+if [ ! -f "$SRC/handler.py" ]; then
+  echo "[bootstrap] src/handler.py missing in $SRC; restoring from image copy /workspace/Lotus/src"
+  mkdir -p "$SRC"
+  cp -r /workspace/Lotus/src/* "$SRC"/ 2>/dev/null || true
+fi
+
 if [ ! -d "$VENV" ]; then
   python -m venv "$VENV"
   source "$VENV/bin/activate"
