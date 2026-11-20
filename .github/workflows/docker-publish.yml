@@ -1,9 +1,13 @@
-name: Docker Publish
+name: Validate and Publish RunPod Image
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 env:
   IMAGE_NAME: gemneye/runpod-serverless-depthmap
@@ -18,17 +22,32 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # Tests run inside the image on the CI builder, not on the source VPS.
+      # This requires neither a GPU nor model weights or API credentials.
+      - name: Validate container (imports, codecs, lint, types, shell, unit tests)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: quality
+          push: false
+          cache-from: type=gha,scope=depthmap
+          cache-to: type=gha,mode=max,scope=depthmap
+
       - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push
+      - name: Build and push runtime image
+        if: github.event_name != 'pull_request'
         uses: docker/build-push-action@v6
         with:
           context: .
+          target: final
           push: true
+          cache-from: type=gha,scope=depthmap
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ github.sha }}

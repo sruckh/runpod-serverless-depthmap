@@ -1,0 +1,14 @@
+# Inference-only dependencies; installed in the image, never at worker startup.
+# torch/torchvision are installed separately from the cu128 wheel index.
+accelerate==1.4.0
+diffusers==0.32.2
+ftfy==6.3.1
+huggingface-hub==0.36.0
+matplotlib==3.10.1
+numpy==2.2.3
+peft==0.15.1
+Pillow==13.0.0
+runpod==1.6.1
+tensorboard==2.19.0
+transformers==4.57.3
+urllib3==2.8.0

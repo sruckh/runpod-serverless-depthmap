@@ -27,3 +27,6 @@ DOCKER_DESCRTIPTION.md
 
 # Node / misc (not used, but ignore just in case)
 node_modules/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

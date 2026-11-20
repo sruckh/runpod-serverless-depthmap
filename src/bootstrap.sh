@@ -1,120 +1,25 @@
 #!/usr/bin/env bash
+# Container entrypoint on RunPod. No installs, clones, or volume-hosted code.
 set -euo pipefail
+trap 'printf "[bootstrap] startup failed at line %s\n" "$LINENO" >&2' ERR
 
-# Determine base mount: prefer /runpod-volume if present, else /workspace
 if [ -d /runpod-volume ]; then
   BASE=/runpod-volume
 else
   BASE=/workspace
 fi
-# If WORKSPACE is unset or the default /workspace/Lotus, move to BASE/Lotus
-ORIGINAL_WORKSPACE="${WORKSPACE:-}"
-if [ -z "$ORIGINAL_WORKSPACE" ] || [ "$ORIGINAL_WORKSPACE" = "/workspace/Lotus" ]; then
+if [ -z "${WORKSPACE:-}" ] || [ "$WORKSPACE" = /workspace/Lotus ]; then
   WORKSPACE="$BASE/Lotus"
-else
-  WORKSPACE="$ORIGINAL_WORKSPACE"
 fi
 export WORKSPACE
-VENV="$WORKSPACE/venv"
-SRC="$WORKSPACE/src"
-CACHE="$WORKSPACE/cache"
-OUTPUT="$WORKSPACE/output_images"
-LOGS="$WORKSPACE/logs"
-UPSTREAM="$WORKSPACE/upstream"
-
-# Ensure workspace root exists
-mkdir -p "$WORKSPACE"
-
-# Basic diagnostics to verify mount and paths
-echo "[bootstrap] BASE=$BASE"
-echo "[bootstrap] ORIGINAL_WORKSPACE=${ORIGINAL_WORKSPACE:-<unset>}"
-echo "[bootstrap] WORKSPACE=$WORKSPACE"
-echo "[bootstrap] pwd=$(pwd)"
-echo "[bootstrap] ls /workspace:"
-ls -la /workspace || true
-echo "[bootstrap] ls WORKSPACE:"
-ls -la "$WORKSPACE" || true
-echo "[bootstrap] df -h:"
-df -h || true
-
-mkdir -p "$CACHE" "$OUTPUT" "$LOGS" "$SRC"
-# Probe file to confirm writability/persistence
-touch "$WORKSPACE/.bootstrap_probe" || true
-
-# Change to workspace for consistency
-cd "$WORKSPACE"
-echo "[bootstrap] cd to $WORKSPACE; pwd=$(pwd)"
-
-# Clone upstream Lotus repo if missing (code is used at runtime; not baked in image)
-if [ ! -d "$UPSTREAM/.git" ]; then
-  git clone https://github.com/EnVision-Research/Lotus.git "$UPSTREAM"
-fi
-
-# Ensure runtime scripts are present in $SRC (copy from image if missing)
-if [ ! -f "$SRC/handler.py" ]; then
-  echo "[bootstrap] src/handler.py missing in $SRC; restoring from image copy /workspace/Lotus/src"
-  mkdir -p "$SRC"
-  cp -r /workspace/Lotus/src/* "$SRC"/ 2>/dev/null || true
-fi
-
-# Cleanup old outputs (older than 14 days)
-if [ -d "$OUTPUT" ]; then
-  find "$OUTPUT" -type f -mtime +14 -delete || true
-fi
-
-if [ ! -d "$VENV" ]; then
-  python -m venv "$VENV"
-  source "$VENV/bin/activate"
-  pip install --upgrade pip
-  pip install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu128
-  pip install https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.8cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
-  pip install \
-    accelerate==1.4.0 datasets==3.3.1 diffusers==0.32.2 easydict==1.13 ftfy==6.3.1 \
-    geffnet==1.0.2 h5py==3.13.0 huggingface-hub==0.36.0 ImageIO==2.37.0 imageio-ffmpeg==0.6.0 \
-    Jinja2==3.1.6 matplotlib==3.10.1 numpy==2.2.3 omegaconf==2.4.0.dev3 opencv-python==4.11.0.86 \
-    peft==0.15.1 spaces==0.33.1 tabulate==0.9.0 tensorboard==2.19.0 transformers==4.57.3 \
-    requests==2.32.3 pillow==11.0.0 runpod==1.6.1
-else
-  source "$VENV/bin/activate"
-  python - <<'PY' || {
-import importlib
-mods = ["runpod","torch","diffusers","transformers"]
-missing = []
-for m in mods:
-    try:
-        importlib.import_module(m)
-    except Exception:
-        missing.append(m)
-if missing:
-    raise SystemExit("missing")
-PY
-    pip install --upgrade pip
-    pip install torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 --index-url https://download.pytorch.org/whl/cu128
-    pip install https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.8cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
-    pip install \
-      accelerate==1.4.0 datasets==3.3.1 diffusers==0.32.2 easydict==1.13 ftfy==6.3.1 \
-      geffnet==1.0.2 h5py==3.13.0 huggingface-hub==0.36.0 ImageIO==2.37.0 imageio-ffmpeg==0.6.0 \
-      Jinja2==3.1.6 matplotlib==3.10.1 numpy==2.2.3 omegaconf==2.4.0.dev3 opencv-python==4.11.0.86 \
-      peft==0.15.1 spaces==0.33.1 tabulate==0.9.0 tensorboard==2.19.0 transformers==4.57.3 \
-      requests==2.32.3 pillow==11.0.0 runpod==1.6.1
-  }
-fi
-
-export HF_HOME="$CACHE"
-export HF_HUB_CACHE="$CACHE"
-export HUGGINGFACE_HUB_CACHE="$CACHE"
+export HF_HOME="${HF_HOME:-$WORKSPACE/cache}"
+export HF_HUB_CACHE="${HF_HUB_CACHE:-${HUGGINGFACE_HUB_CACHE:-$HF_HOME}}"
+export HUGGINGFACE_HUB_CACHE="$HF_HUB_CACHE"
 export HF_HUB_DISABLE_PROGRESS_BARS=1
 export TRANSFORMERS_VERBOSITY=error
 export RUNPOD_SERVER_PORT="${RUNPOD_SERVER_PORT:-3000}"
-PYTHONPATH_VALUE="${PYTHONPATH:-}"
-export PYTHONPATH="$SRC:$UPSTREAM:$PYTHONPATH_VALUE"
-
-# Optional: prefetch model (uncomment if desired)
-# MODEL_ID=${MODEL_ID:-jingheya/lotus-depth-d-v2-0-disparity}
-# hf download "$MODEL_ID" --repo-type model --local-dir $WORKSPACE/models/lotus-depth-d --include "*.safetensors" "*.json" "*.pt"
-
-# Optional warmup (non-fatal if it fails)
-python "$SRC/handler.py" --warmup || true
-
-# Start handler (runpod serverless mode)
-exec python "$SRC/handler.py"
+# Immutable code comes from the image, never an old copy on the mounted volume.
+export PYTHONPATH=/app:/opt/lotus
+mkdir -p "$HF_HOME" "$HF_HUB_CACHE" "$WORKSPACE/output_images"
+printf '[bootstrap] runtime=image workspace=%s\n' "$WORKSPACE"
+exec /opt/venv/bin/python -u /app/handler.py "$@"
